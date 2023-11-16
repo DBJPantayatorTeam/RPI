@@ -41,7 +41,7 @@ public class Main {
         System.out.println("Local server IP: " + localIp);
 
         //String comando = "cd ~/dev/rpi-rgb-led-matrix && examples-api-use/text-example -x 5 -y 18 -f ~/dev/bitmap-fonts/bitmap/cherry/cherry-10-b.bdf --led-cols=64 --led-rows=64 --led-slowdown-gpio=4 --led-no-hardware-pulse";
-
+        
         String comando = "cd ~/dev/rpi-rgb-led-matrix/utils && ./text-scroller -f ~/dev/bitmap-fonts/bitmap/cherry/cherry-10-b.bdf --led-cols=64 --led-rows=64 --led-slowdown-gpio=4 --led-no-hardware-pulse \""+localIp+"\"";
         try {
             // Crear un objeto ProcessBuilder

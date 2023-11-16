@@ -2,14 +2,13 @@ package com.project;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
-
-import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,6 +30,7 @@ public class ChatServer extends WebSocketServer {
     @Override
     public void onStart() {
         // Quan el servidor s'inicia
+        
         String host = getAddress().getAddress().getHostAddress();
         int port = getAddress().getPort();
         System.out.println("WebSockets server running at: ws://" + host + ":" + port);
@@ -47,12 +47,8 @@ public class ChatServer extends WebSocketServer {
         System.out.println(conn);
         System.out.println(handshake);
 
+        executeKillCommand();
 
-        String numeroKill = getFirstProcess();
-        executeKillCommand(numeroKill);
-
-
-        System.out.println("1");
 
         // Saludem personalment al nou client
         JSONObject objWlc = new JSONObject("{}");
@@ -90,8 +86,8 @@ public class ChatServer extends WebSocketServer {
 
         usuarios.remove(clientId);
 
-        String process = getFirstProcess();
-        executeKillCommand(process);
+        
+        executeKillCommand();
 
         executeDisplayCommand(getUsers());
 
@@ -111,10 +107,7 @@ public class ChatServer extends WebSocketServer {
     public void onMessage(WebSocket conn, String message) {
         // Quan arriba un missatge
 
-        String numeroKill = getFirstProcess();
-        executeKillCommand(numeroKill);
-
-        System.out.println("2");
+        executeKillCommand();
 
         String clientId = getConnectionId(conn);
         try {
@@ -232,12 +225,11 @@ public class ChatServer extends WebSocketServer {
         }
     }
 
-    public static void executeKillCommand(String numeroProceso) {
+    public static void executeKillCommand() {
         try {
-            String killCommand = "kill " + numeroProceso;
+            String killCommand = "killall text-scroller"; 
             ProcessBuilder killProcessBuilder = new ProcessBuilder("bash", "-c", killCommand);
             Process killProceso = killProcessBuilder.start();
-            int resultadoKill = killProceso.waitFor();
         } catch (Exception e) {
             e.printStackTrace();
         }
