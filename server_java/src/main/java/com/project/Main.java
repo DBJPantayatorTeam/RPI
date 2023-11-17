@@ -12,24 +12,14 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 
-// Tutorials: http://tootallnate.github.io/Java-WebSocket/
-
 /*
     WebSockets server, example of messages:
 
     From client to server:
-        - List of clients       { "type": "list" }
-        - Private message       { "type": "private", "value": "Hello 002", "destination": "002" }
-        - Broadcast message     { "type": "broadcast", "value": "Hello everyone" }
+        
 
     From server to client:
-        - Welcome message       { "type": "private", "from": "server", "value": "Welcome to the chat server" }
-        - Client Id             { "type": "id", "from": "server", "value": "002" }
-        - List of clients       { "type": "list", "from": "server", "list": ["001", "002", "003"] }
-        - Private message       { "type": "private", "from": "001", "value": "Hello 002" }
-        - Broadcast message     { "type": "broadcast", "from": "001", "value": "Hello everyone" }
-        - Client connected      { "type": "connected", "from": "server", "id": "001" }
-        - Client disconnected   { "type": "disconnected", "from": "server", "id": "001" }
+        
  */
 
 public class Main {
@@ -67,6 +57,7 @@ public class Main {
 
         java.lang.System.setProperty("jdk.tls.client.protocols", "TLSv1,TLSv1.1,TLSv1.2");
         ChatServer server = new ChatServer(port);
+        server.loadUsersAndPasswords();
         server.runServerBucle();
     }
 

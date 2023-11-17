@@ -1,6 +1,8 @@
 package com.project;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -9,6 +11,8 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,6 +26,7 @@ public class ChatServer extends WebSocketServer {
     static BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
     private static Map<String, String> usuarios = new HashMap<String, String>();
+    public Map<String, String> registeredUsers = new HashMap<String, String>();
 
     public ChatServer(int port) {
         super(new InetSocketAddress(port));
@@ -83,14 +88,11 @@ public class ChatServer extends WebSocketServer {
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
         // Quan un client es desconnecta
         String clientId = getConnectionId(conn);
-
         usuarios.remove(clientId);
-
         
         executeKillCommand();
 
         executeDisplayCommand(getUsers());
-
 
         // Informem a tothom que el client s'ha desconnectat
         JSONObject objCln = new JSONObject("{}");
@@ -128,6 +130,25 @@ public class ChatServer extends WebSocketServer {
             if (type.equalsIgnoreCase("show")) {
                 String value = objRequest.getString("value");
                 executeDisplayCommand(value);
+            }
+            if (type.equalsIgnoreCase("login")) {
+                String user = objRequest.getString("user");
+                String passwd = objRequest.getString("password");
+                Set<String> users = registeredUsers.keySet();
+                JSONObject response = new JSONObject("{}");
+                response.put("type", "login");
+
+                //Validar usuari
+                if (users.contains(user)) {
+                    if (registeredUsers.get(user).equals(passwd)) {
+                        response.put("value", true);
+                    } else {
+                        response.put("value", false);
+                    }
+                } else {
+                    response.put("value", false);
+                }
+                conn.send(response.toString());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -268,5 +289,32 @@ public class ChatServer extends WebSocketServer {
         text += "App: " + appUsers;
         text += " Desktop: " + desktopUsers;
         return text;
+    }
+
+    public void loadUsersAndPasswords(){
+        File data = new File("data/users.txt");
+        boolean user = false;
+        try {
+            Scanner sc = new Scanner(data);
+            while (sc.hasNextLine()) {
+                String line = sc.nextLine();
+                String name = "";
+                String passwd = "";
+                String[] palabras = line.split(";");
+
+                for (String s : palabras) {
+                    if (user) {
+                        passwd = "" +s;
+                        registeredUsers.put(name, passwd);
+                        user = !user;
+                    } else {
+                        name = ""+ s;
+                        user = !user;
+                    }
+                }
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 }
