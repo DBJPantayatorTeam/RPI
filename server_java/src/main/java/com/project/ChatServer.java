@@ -23,13 +23,13 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.imageio.ImageIO;
+
+import org.apache.commons.codec.binary.Base64;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.json.JSONObject;
-import org.apache.commons.codec.binary.Base64;
-
-import javax.imageio.ImageIO;
 
 public class ChatServer extends WebSocketServer {
 
@@ -328,7 +328,7 @@ public class ChatServer extends WebSocketServer {
 
     public static void executeDisplayImageCommand() {
         try {
-            String command = "./led-image-viewer -C --led-cols=64 --led-rows=64 --led-slowdown-gpio=4 --led-no-hardware-pulse data/image.jpeg";
+            String command = "cd ~/dev/rpi-rgb-led-matrix/utils &&  ./led-image-viewer -C --led-cols=64 --led-rows=64 --led-slowdown-gpio=4 --led-no-hardware-pulse data/image.jpeg";
 
             ProcessBuilder pB = new ProcessBuilder("bash", "-c", command);
             Process proceso = pB.start();

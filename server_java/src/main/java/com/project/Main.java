@@ -63,6 +63,7 @@ public class Main {
 
     public static String getLocalIPAddress() throws SocketException, UnknownHostException {
         String localIp = "";
+        executeKillCommand();
         Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
         while (networkInterfaces.hasMoreElements()) {
             NetworkInterface ni = networkInterfaces.nextElement();
@@ -82,6 +83,22 @@ public class Main {
             localIp = InetAddress.getLocalHost().getHostAddress();
         }
         return localIp;
+    }
+
+    public static void executeKillCommand() {
+        try {
+            //Per al text scrolling
+            String killCommand = "killall text-scroller"; 
+            ProcessBuilder killProcessBuilder = new ProcessBuilder("bash", "-c", killCommand);
+            Process killProceso = killProcessBuilder.start();
+
+            //Per a les imatges
+            String killCommand2 = "killall led-image-viewer"; 
+            ProcessBuilder killProcessBuilder2 = new ProcessBuilder("bash", "-c", killCommand2);
+            Process killProceso2 = killProcessBuilder2.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
