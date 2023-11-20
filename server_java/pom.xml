@@ -57,7 +57,14 @@
             <groupId>com.jcraft</groupId>
             <artifactId>jsch</artifactId>
             <version>0.1.55</version>
-        </dependency>        
+        </dependency>
+
+        <!-- Dependencia para Apache Commons Codec -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.15</version> 
+        </dependency>
         
     </dependencies>
     <profiles>
