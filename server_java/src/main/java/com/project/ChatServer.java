@@ -15,8 +15,10 @@ import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
@@ -37,7 +39,7 @@ public class ChatServer extends WebSocketServer {
 
     private static Map<String, String> usuarios = new HashMap<String, String>();
     public Map<String, String> registeredUsers = new HashMap<String, String>();
-    public int serverIp;
+    public static List<Process> procesos = new ArrayList<Process>();
 
     public ChatServer(int port) {
         super(new InetSocketAddress(port));
@@ -102,16 +104,7 @@ public class ChatServer extends WebSocketServer {
         usuarios.remove(clientId);
         
         executeKillCommand();
-
-        if (usuarios.size() != 0) {
-            executeDisplayCommand(getUsers());
-        } else {
-            try {
-                executeDisplayCommand(getLocalIPAddress());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        executeDisplayCommand(getUsers());
 
         // Informem a tothom que el client s'ha desconnectat
         JSONObject objCln = new JSONObject("{}");
@@ -151,10 +144,10 @@ public class ChatServer extends WebSocketServer {
                 executeDisplayCommand(value);
             }
             else if (type.equalsIgnoreCase("image")) {
+                executeKillCommand();
                 String value = objRequest.getString("value");
                 convertBase64ToImage(value);
                 executeDisplayImageCommand();
-
             }
             else if (type.equalsIgnoreCase("login")) {
                 String user = objRequest.getString("user");
@@ -248,7 +241,7 @@ public class ChatServer extends WebSocketServer {
 
     public static String getFirstProcess() {
         try {
-            ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", "ps aux | grep text");
+            ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", "ps aux | grep image");
             Process proceso = processBuilder.start();
             InputStream inputStream = proceso.getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
@@ -273,15 +266,11 @@ public class ChatServer extends WebSocketServer {
 
     public static void executeKillCommand() {
         try {
-            //Per al text scrolling
-            String killCommand = "killall text-scroller"; 
-            ProcessBuilder killProcessBuilder = new ProcessBuilder("bash", "-c", killCommand);
-            Process killProceso = killProcessBuilder.start();
-
-            //Per a les imatges
-            String killCommand2 = "killall led-image-viewer"; 
-            ProcessBuilder killProcessBuilder2 = new ProcessBuilder("bash", "-c", killCommand2);
-            Process killProceso2 = killProcessBuilder2.start();
+            for (int i = 0; i < procesos.size(); i++) {
+                procesos.get(i).destroy();
+            }
+            procesos.clear();
+            
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -314,6 +303,7 @@ public class ChatServer extends WebSocketServer {
 
             ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", command);
             Process proceso = processBuilder.start();
+            procesos.add(proceso);
 
             InputStream inputStream = proceso.getInputStream();
             OutputStream outputStream = proceso.getOutputStream();
@@ -328,10 +318,11 @@ public class ChatServer extends WebSocketServer {
 
     public static void executeDisplayImageCommand() {
         try {
-            String command = "cd ~/dev/rpi-rgb-led-matrix/utils &&  ./led-image-viewer -C --led-cols=64 --led-rows=64 --led-slowdown-gpio=4 --led-no-hardware-pulse data/image.jpeg";
+            String command = "cd ~/dev/rpi-rgb-led-matrix/utils &&  ./led-image-viewer -C --led-cols=64 --led-rows=64 --led-slowdown-gpio=4 --led-no-hardware-pulse data/image.jpg";
 
             ProcessBuilder pB = new ProcessBuilder("bash", "-c", command);
             Process proceso = pB.start();
+            procesos.add(proceso);
 
             int exitCode = proceso.waitFor();
             System.out.println("El proces ha terminat amb el códi de sortida: " + exitCode);
