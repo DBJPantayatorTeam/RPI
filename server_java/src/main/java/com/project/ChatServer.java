@@ -15,10 +15,8 @@ import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
@@ -39,7 +37,7 @@ public class ChatServer extends WebSocketServer {
 
     private static Map<String, String> usuarios = new HashMap<String, String>();
     public Map<String, String> registeredUsers = new HashMap<String, String>();
-    public static List<Process> procesos = new ArrayList<Process>();
+    public int serverIp;
 
     public ChatServer(int port) {
         super(new InetSocketAddress(port));
@@ -266,10 +264,16 @@ public class ChatServer extends WebSocketServer {
 
     public static void executeKillCommand() {
         try {
-            for (int i = 0; i < procesos.size(); i++) {
-                procesos.get(i).destroy();
-            }
-            procesos.clear();
+            //Per al text scrolling
+            String killCommand = "killall text-scroller"; 
+            ProcessBuilder killProcessBuilder = new ProcessBuilder("bash", "-c", killCommand);
+            Process killProceso = killProcessBuilder.start();
+
+            //Per a les imatges
+            String killCommand2 = "killall led-image-viewer"; 
+            ProcessBuilder killProcessBuilder2 = new ProcessBuilder("bash", "-c", killCommand2);
+            Process killProceso2 = killProcessBuilder2.start();
+            killProceso2.waitFor();
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -303,7 +307,6 @@ public class ChatServer extends WebSocketServer {
 
             ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", command);
             Process proceso = processBuilder.start();
-            procesos.add(proceso);
 
             InputStream inputStream = proceso.getInputStream();
             OutputStream outputStream = proceso.getOutputStream();
@@ -318,14 +321,12 @@ public class ChatServer extends WebSocketServer {
 
     public static void executeDisplayImageCommand() {
         try {
-            String command = "cd ~/dev/rpi-rgb-led-matrix/utils &&  ./led-image-viewer -C --led-cols=64 --led-rows=64 --led-slowdown-gpio=4 --led-no-hardware-pulse data/image.jpg";
+            String command = "cd ~/dev/rpi-rgb-led-matrix/utils &&  ./led-image-viewer -C --led-cols=64 --led-rows=64 --led-slowdown-gpio=4 --led-no-hardware-pulse ~/RPI/server_java/data/image.jpg";
 
             ProcessBuilder pB = new ProcessBuilder("bash", "-c", command);
             Process proceso = pB.start();
-            procesos.add(proceso);
 
-            int exitCode = proceso.waitFor();
-            System.out.println("El proces ha terminat amb el códi de sortida: " + exitCode);
+          
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
