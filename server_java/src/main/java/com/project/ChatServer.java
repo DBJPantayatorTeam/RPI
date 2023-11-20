@@ -10,7 +10,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -32,6 +37,7 @@ public class ChatServer extends WebSocketServer {
 
     private static Map<String, String> usuarios = new HashMap<String, String>();
     public Map<String, String> registeredUsers = new HashMap<String, String>();
+    public int serverIp;
 
     public ChatServer(int port) {
         super(new InetSocketAddress(port));
@@ -97,7 +103,15 @@ public class ChatServer extends WebSocketServer {
         
         executeKillCommand();
 
-        executeDisplayCommand(getUsers());
+        if (usuarios.size() != 0) {
+            executeDisplayCommand(getUsers());
+        } else {
+            try {
+                executeDisplayCommand(getLocalIPAddress());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
         // Informem a tothom que el client s'ha desconnectat
         JSONObject objCln = new JSONObject("{}");
@@ -282,14 +296,14 @@ public class ChatServer extends WebSocketServer {
 
             BufferedImage bufferedImage = ImageIO.read(bis);
             
-            File outputFile = new File("data/image.jpeg");
+            File outputFile = new File("data/image.jpg");
             if (outputFile.exists()) {
                 outputFile.delete();
             }
-            ImageIO.write(bufferedImage, "jpeg", outputFile);
+            ImageIO.write(bufferedImage, "jpg", outputFile);
             
         } catch (Exception e){
-
+            e.printStackTrace();
         }
     }
 
@@ -368,5 +382,28 @@ public class ChatServer extends WebSocketServer {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    public static String getLocalIPAddress() throws SocketException, UnknownHostException {
+        String localIp = "";
+        Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+        while (networkInterfaces.hasMoreElements()) {
+            NetworkInterface ni = networkInterfaces.nextElement();
+            Enumeration<InetAddress> inetAddresses = ni.getInetAddresses();
+            while (inetAddresses.hasMoreElements()) {
+                InetAddress ia = inetAddresses.nextElement();
+                if (!ia.isLinkLocalAddress() && !ia.isLoopbackAddress() && ia.isSiteLocalAddress()) {
+                    System.out.println(ni.getDisplayName() + ": " + ia.getHostAddress());
+                    localIp = ia.getHostAddress();
+                    // Si hi ha múltiples direccions IP, es queda amb la última
+                }
+            }
+        }
+
+        // Si no troba cap direcció IP torna la loopback
+        if (localIp.compareToIgnoreCase("") == 0) {
+            localIp = InetAddress.getLocalHost().getHostAddress();
+        }
+        return localIp;
     }
 }
