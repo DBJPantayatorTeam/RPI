@@ -15,8 +15,10 @@ import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
@@ -37,6 +39,7 @@ public class ChatServer extends WebSocketServer {
 
     private static Map<String, String> usuarios = new HashMap<String, String>();
     public Map<String, String> registeredUsers = new HashMap<String, String>();
+    private List<Map<String, Map<String, String>>> usersLogin = new ArrayList<>();
     public int serverIp;
 
     public ChatServer(int port) {
@@ -100,6 +103,9 @@ public class ChatServer extends WebSocketServer {
         // Quan un client es desconnecta
         String clientId = getConnectionId(conn);
         usuarios.remove(clientId);
+        if (usersLogin.contains(clientId)){
+            usersLogin.remove(clientId);
+        }
         
         executeKillCommand();
         executeDisplayCommand(getUsers());
@@ -158,12 +164,35 @@ public class ChatServer extends WebSocketServer {
                 if (users.contains(user)) {
                     if (registeredUsers.get(user).equals(passwd)) {
                         response.put("value", true);
+
+                        Map<String, String> userInfo = new HashMap<>();
+                        userInfo.put("usuario", user);
+                        userInfo.put("plataforma", usuarios.get(clientId));
+
+                        Map<String, Map<String, String>> loggedInUser = new HashMap<>();
+                        loggedInUser.put(clientId, userInfo);
+
+                        usersLogin.add(loggedInUser);
                     } else {
                         response.put("value", false);
                     }
                 } else {
                     response.put("value", false);
                 }
+                conn.send(response.toString());
+            } 
+            else if (type.equalsIgnoreCase("usersList")) {
+                List<Map> activeUsers = new ArrayList<>();
+                JSONObject response = new JSONObject("{}");
+                response.put("type", "usersOnline");
+
+                for (Map<String, Map<String, String>> user : usersLogin) {
+                    activeUsers.add(user);
+                }
+                response.put("value", activeUsers);
+
+                executeDisplayCommand(response.toString());
+
                 conn.send(response.toString());
             }
         } catch (Exception e) {
@@ -186,6 +215,7 @@ public class ChatServer extends WebSocketServer {
                 String line;
                 line = in.readLine();
                 if (line.equals("exit")) {
+                    executeKillCommand();
                     running = false;
                 }
             }
@@ -338,9 +368,9 @@ public class ChatServer extends WebSocketServer {
         int appUsers = 0;
         int desktopUsers = 0;
         for (Map.Entry<String, String> entry : usuarios.entrySet()) {
-            if (entry.getValue() == "app") {
+            if (entry.getValue().equals("app")) {
                 appUsers += 1;
-            } else if (entry.getValue() == "desktop") {
+            } else if (entry.getValue().equals("desktop")) {
                 desktopUsers += 1;
             }
         }
