@@ -41,6 +41,7 @@ public class ChatServer extends WebSocketServer {
     public Map<String, String> registeredUsers = new HashMap<String, String>();
     private List<Map<String, Map<String, String>>> usersLogin = new ArrayList<>();
     public int serverIp;
+    private int totalConnectionsNumber;
 
     public ChatServer(int port) {
         super(new InetSocketAddress(port));
@@ -86,12 +87,13 @@ public class ChatServer extends WebSocketServer {
         // Enviem al client la llista amb tots els clients connectats
         send0(conn);
 
+        totalConnectionsNumber++;
+
         // Enviem la direcció URI del nou client a tothom
         JSONObject objCln = new JSONObject("{}");
-        objCln.put("type", "connected");
-        objCln.put("from", "server");
-        objCln.put("id", clientId);
-        broadcast(objCln.toString());
+        objCln.put("type", "connection");
+        objCln.put("value", totalConnectionsNumber);
+        broadcast(objCln.toString());   
 
         // Mostrem per pantalla (servidor) la nova connexió
         String host = conn.getRemoteSocketAddress().getAddress().getHostAddress();
@@ -103,18 +105,17 @@ public class ChatServer extends WebSocketServer {
         // Quan un client es desconnecta
         String clientId = getConnectionId(conn);
         usuarios.remove(clientId);
-        if (usersLogin.contains(clientId)){
-            usersLogin.remove(clientId);
-        }
-        
+        usersLogin.remove(clientId);
+
         executeKillCommand();
         executeDisplayCommand(getUsers());
 
+        totalConnectionsNumber--;
+
         // Informem a tothom que el client s'ha desconnectat
         JSONObject objCln = new JSONObject("{}");
-        objCln.put("type", "disconnected");
-        objCln.put("from", "server");
-        objCln.put("id", clientId);
+        objCln.put("type", "disconnection");
+        objCln.put("value", totalConnectionsNumber);
         broadcast(objCln.toString());
 
         // Mostrem per pantalla (servidor) la desconnexió
@@ -146,6 +147,12 @@ public class ChatServer extends WebSocketServer {
             else if (type.equalsIgnoreCase("show")) {
                 String value = objRequest.getString("value");
                 executeDisplayCommand(value);
+
+                // Informem a tothom que el client ha enviat un mistage
+                JSONObject objCln = new JSONObject("{}");
+                objCln.put("type", "sendMessage");
+                objCln.put("value", objRequest.getString("user"));
+                broadcast(objCln.toString());
             }
             else if (type.equalsIgnoreCase("image")) {
                 executeKillCommand();
@@ -214,7 +221,7 @@ public class ChatServer extends WebSocketServer {
             while (running) {
                 String line;
                 line = in.readLine();
-                if (line.equals("exit")) {
+                if (line != null && line.equals("exit")) {
                     executeKillCommand();
                     running = false;
                 }
@@ -223,6 +230,14 @@ public class ChatServer extends WebSocketServer {
             stop(1000);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (in != null) {
+                    in.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
