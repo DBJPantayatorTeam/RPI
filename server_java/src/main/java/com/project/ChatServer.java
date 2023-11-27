@@ -105,7 +105,7 @@ public class ChatServer extends WebSocketServer {
         // Quan un client es desconnecta
         String clientId = getConnectionId(conn);
         usuarios.remove(clientId);
-        usersLogin.remove(clientId);
+        usersLogin.removeIf(elmnt -> elmnt.containsKey(clientId));
 
         executeKillCommand();
         executeDisplayCommand(getUsers());
