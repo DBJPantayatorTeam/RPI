@@ -13,7 +13,7 @@ Servidor per utilitzar Pantayator.
    - Pantalla connectada a la Raspberry Pi.
 
 2. **Programari:**
-   - [Especificacions del Panell](https://github.com/hzeller/rpi-rgb-led-matrix).
+   - [Controlling RGB LED display](https://github.com/hzeller/rpi-rgb-led-matrix).
 
 ## Passos per Iniciar el Servidor
 
