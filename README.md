@@ -41,5 +41,5 @@ Executa la següent ordre en PowerShell:
 El teu servidor hauria de funcionar ara.
 
 ### Notes adicionals
-Per obtenir més informació sobre el panell, consulta les [https://github.com/hzeller/rpi-rgb-led-matrix"Especificaions de la pantalla"].
+Per obtenir més informació sobre el panell, consulta les [Especificacions de la pantalla](https://github.com/hzeller/rpi-rgb-led-matrix)
 Assegura't de tenir els permisos necessaris per executar els scripts.
