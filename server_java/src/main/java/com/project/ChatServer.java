@@ -105,7 +105,9 @@ public class ChatServer extends WebSocketServer {
         // Quan un client es desconnecta
         String clientId = getConnectionId(conn);
         usuarios.remove(clientId);
-        usersLogin.removeIf(elmnt -> elmnt.containsKey(clientId));
+        usersLogin.removeIf(user -> user.containsKey(clientId));
+        System.out.println(usersLogin);
+        
 
         executeKillCommand();
         executeDisplayCommand(getUsers());
@@ -180,6 +182,7 @@ public class ChatServer extends WebSocketServer {
                         loggedInUser.put(clientId, userInfo);
 
                         usersLogin.add(loggedInUser);
+                        System.out.println(usersLogin);
                     } else {
                         response.put("value", false);
                     }
@@ -197,8 +200,6 @@ public class ChatServer extends WebSocketServer {
                     activeUsers.add(user);
                 }
                 response.put("value", activeUsers);
-
-                executeDisplayCommand(response.toString());
 
                 conn.send(response.toString());
             }
