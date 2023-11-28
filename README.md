@@ -19,8 +19,8 @@ Servidor per utilitzar Pantayator.
 
 ### 1. Clonar el Projecte
 ```bash
-git clone https://github.com/EL_TEU_USUARI/EL_TEU_PROJECTE.git
-cd EL_TEU_PROJECTE/server_java
+git clone https://github.com/DBJPantayatorTeam/RPI
+cd RPI/server_java
 ```
 ### 2. Netegar i Compilar
 ```bash
